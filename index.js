@@ -1,6 +1,7 @@
 import express from 'express'
 import { MongoClient } from 'mongodb'
 import { ObjectId } from 'mongodb'
+import { userRouter } from './routes/users.js'
 import dotenv from "dotenv"
 import cors from "cors"
 
@@ -10,6 +11,10 @@ const app = express()
 app.use(cors())
 
 app.use(express.json())
+
+
+// Express router         if path of fetch starts with /sign go to userRouter
+app.use("/sign", userRouter)
 
 dotenv.config()
 
@@ -22,7 +27,7 @@ async function createConnection(){
     return client
 }
 
-const client = await createConnection();
+export const client = await createConnection();
 
 
 app.get('/', function (req, res) {

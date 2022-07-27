@@ -1,0 +1,36 @@
+ // If the mail exists we first generate a random OTP of 10 digits
+        let random_string = "";
+        const buffer = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890";
+        let i=0;
+        while(i<10){
+            random_string+= buffer.charAt(Math.floor((Math.random()*(buffer.length))));
+            i++;
+        }
+        // We store this random OTP in the DB to user whose email ID is same as sent from frontend for later verification
+        await client.db("mtc").collection("users").updateOne(data, {$set :{otp: random_string}});
+        // We now send the email alongwith the generated OTP for verification
+        var transporter = nodemailer.createTransport({
+            // Mail sender credentials
+            service: 'gmail',
+            auth: {
+              user: 'dummyuser123890@gmail.com',
+              pass: process.env.senderpass
+            }
+          });
+          // Mail reciever credentials
+          var mailOptions = {
+            from: 'dummyuser123890@gmail.com',
+            to: `${data.email}`,
+            subject: 'Sent Email using Nodemailer from the Node.js MyTravelCompanion application',
+            text: `Copy this OTP : ${random_string}
+            `        
+          };
+          // Tracking the operation of sending the mail
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email sent: ' + info.response);
+            }
+          });
+        res.send({"msg": "An email is sent to you. Kindly check your mails"});
