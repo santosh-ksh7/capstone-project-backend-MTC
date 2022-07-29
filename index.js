@@ -2,6 +2,7 @@ import express from 'express'
 import { MongoClient } from 'mongodb'
 import { ObjectId } from 'mongodb'
 import { userRouter } from './routes/users.js'
+import { writeablogRouter } from './routes/writeablog.js'
 import dotenv from "dotenv"
 import cors from "cors"
 
@@ -15,6 +16,9 @@ app.use(express.json())
 
 // Express router         if path of fetch starts with /sign go to userRouter
 app.use("/sign", userRouter)
+
+// Express router         if path starts with /write-a-blog got to writeablogRouter
+app.use("/write-a-blog", writeablogRouter)
 
 dotenv.config()
 
