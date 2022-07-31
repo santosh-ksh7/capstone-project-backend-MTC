@@ -4,6 +4,7 @@ import { client } from "../index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
+import { ObjectId } from "mongodb";
 
 
 const router = express.Router();
@@ -171,4 +172,23 @@ router.post("/reset-password", async function(req,res){
     const find_and_update = await client.db("mtc").collection("users").updateOne({email: data.email}, {$set :{pwd: hash}});
     res.send({"msg": "The password is succesfully updated", find_and_update});
     // after succesfully reset password happens remember to clean up the email stored in local storage
+})
+
+
+
+
+
+
+// API to update users account info
+router.post("/update-account-info",  async function(req, res){
+    const data = req.body
+    // first check that in case if the email is updated by user, the same emailID shouldn't be associated to any other user.
+    const findindb = await client.db("mtc").collection("users").findOne({email: data.email, _id: {$ne : ObjectId(data._id)}});
+    if(findindb){
+        res.send({"msg": "This email is already registered."})
+    }else{
+        // update user info in the DB
+        const update2db =  await client.db("mtc").collection("users").updateOne({_id: ObjectId(data._id)}, {$set: {"email": data.email, "about": data.about, "profile_pic": data.profile_pic, "name": data.name, "fb_link": data.fb_link, "twitter_link": data.twitter_link, "insta_link" :data.insta_link}});
+        res.send(update2db);
+    }
 })
