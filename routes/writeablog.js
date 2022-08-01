@@ -1,5 +1,5 @@
 //  This API is for all the API calls corresponding to write a blog, upload a blog, edit a blog, delte a blog
-import { ObjectID } from "bson";
+import { ObjectId, ObjectID } from "bson";
 import express from "express";
 import { client } from "../index.js";
 
@@ -50,4 +50,38 @@ router.post("/upload-blog", async function(req,res){
     console.log(data2insert);
     let insert2db = await client.db("mtc").collection("blogs").insertOne(data2insert);
     res.send(insert2db);
+})
+
+
+
+
+
+
+
+
+
+
+// API to get a specific blog only data
+router.get("/get-data-4-editing-a-blog/:id", async function(req, res){
+    // Making use of req.params to get id of blog
+    const{id} = req.params;
+    // Query the db to get the data
+    const findindb = await client.db("mtc").collection("blogs").findOne({_id: ObjectID(id)});
+    res.send(findindb)
+})
+
+
+
+
+
+
+
+// API to edit the blog & update the document in DB
+router.post("/edit-a-blog", async function(req, res){
+    let data = req.body;
+    const updatedocument = await client.db("mtc").collection("blogs").updateOne({_id: ObjectId(data._id)}, {$set: {"title": data.title, "story": data.story, "tag": data.tag, "blog_pic": data.blog_pic}});
+    console.log(updatedocument);
+    if(updatedocument.acknowledged){
+        res.send({"msg" : "Succesfully updated the blog post"})
+    }
 })

@@ -192,3 +192,179 @@ router.post("/update-account-info",  async function(req, res){
         res.send(update2db);
     }
 })
+
+
+
+
+// API for all blogs specific to user based on it's _id (from the local storage in the frontend)
+router.get("/get-all-blogs/:id", async function(req,res){
+    const {id} = req.params;
+    console.log(id);
+    const getallblogs = await client.db("mtc").collection("blogs").aggregate([
+      {$match: {author_id: ObjectId(id)}},
+      {$lookup: {
+        from: "users",
+        localField: "author_id",
+        foreignField: "_id",
+        as: "user_info"
+      }},
+      {$unwind: "$user_info"}
+    ]).toArray()
+    res.send(getallblogs)
+})
+
+
+
+
+
+
+
+
+
+// API to delete a blog
+router.get("/delete-a-post/:id", async function(req, res){
+    // using params in the URL to get hold of the id of the post that is to be deleted
+    const{id} = req.params;
+    // Initial stage is to find the author of the blog for later use
+    const authorofblog = await client.db("mtc").collection("blogs").findOne({_id : ObjectId(id)});
+    // First step is to delete all the comments in the comments collection related to the blog
+    const delcomm4blog = await client.db("mtc").collection("comments").deleteMany({blog_id : ObjectId(id)});
+    // Second step is to delete the blog from saved post collection
+    const del4savedpost = await client.db("mtc").collection("saved_posts").deleteMany({blog_id : ObjectId(id)});
+    // Third step is to delete the blog from the liked collection
+    const del4likedpost = await client.db("mtc").collection("liked_posts").deleteMany({blog_id : ObjectId(id)});
+    // FInally delete the blog from the blogs collection
+    const delfromblogs = await client.db("mtc").collection("blogs").deleteOne({_id : ObjectId(id)});
+    console.log(authorofblog, delcomm4blog, del4savedpost, del4likedpost, delfromblogs);
+    // AFter sucesfull delteion of everything send the updated all blogs by the user
+    const findallblogsbyuser = await client.db("mtc").collection("blogs").aggregate([
+      {$match: {author_id: ObjectId(authorofblog.author_id)}},
+      {$lookup: {
+        from: "users",
+        localField: "author_id",
+        foreignField: "_id",
+        as: "user_info"
+      }},
+      {$unwind: "$user_info"}
+    ]).toArray()
+    res.send({"msg" : "Sucessfully deleted the blog", "updateddata": findallblogsbyuser})
+})
+
+
+
+
+
+// API to get all saved posts by a user
+router.get("/get-all-saved-posts/:id", async function(req, res){
+    const {id} = req.params;
+    // Find all saved blogs by user & send the response back
+    const findallsavedblog = await client.db("mtc").collection("saved_posts").aggregate([
+        {$match : {author_id: ObjectId(id)}},
+        {$lookup : {
+            from: "blogs",
+            localField: "blog_id",
+            foreignField: "_id",
+            as: "blog_info"
+        }},
+        {$unwind: "$blog_info"},
+        {$lookup : {
+            from: "users",
+            localField: "blog_info.author_id",
+            foreignField: "_id",
+            as: "user_info"
+        }},
+        {$unwind: "$user_info"},
+    ]).toArray()
+    res.send(findallsavedblog)
+})
+  
+
+
+
+
+
+// API to delete a saved post & return the updated saved post data
+router.post("/delete-a-saved-post", async function(req, res){
+    const data = req.body;
+    // Delete the saved blog from the saved blog collection
+    const del = await client.db("mtc").collection("saved_posts").deleteOne({blog_id: ObjectId(data.blog_id), author_id: ObjectId(data.loggeduserid)});
+    // return the updated saved blogs by user
+    const findallsavedblog = await client.db("mtc").collection("saved_posts").aggregate([
+        {$match : {author_id: ObjectId(data.loggeduserid)}},
+        {$lookup : {
+            from: "blogs",
+            localField: "blog_id",
+            foreignField: "_id",
+            as: "blog_info"
+        }},
+        {$unwind: "$blog_info"},
+        {$lookup : {
+            from: "users",
+            localField: "blog_info.author_id",
+            foreignField: "_id",
+            as: "user_info"
+        }},
+        {$unwind: "$user_info"},
+    ]).toArray()
+    res.send(findallsavedblog)
+})
+
+
+
+
+
+
+
+// API to get all liked blogs by a user
+router.get("/get-all-liked-posts/:id", async function(req, res){
+    const {id} = req.params;
+    // Find all saved blogs by user & send the response back
+    const findalllikedblog = await client.db("mtc").collection("liked_posts").aggregate([
+        {$match : {author_id: ObjectId(id)}},
+        {$lookup : {
+            from: "blogs",
+            localField: "blog_id",
+            foreignField: "_id",
+            as: "blog_info"
+        }},
+        {$unwind: "$blog_info"},
+        {$lookup : {
+            from: "users",
+            localField: "blog_info.author_id",
+            foreignField: "_id",
+            as: "user_info"
+        }},
+        {$unwind: "$user_info"},
+    ]).toArray()
+    res.send(findalllikedblog)
+})
+
+
+
+
+
+// API to delete a saved post & return updated saved post by user
+router.post("/delete-a-liked-post", async function(req, res){
+    const data = req.body;
+    // Delete the saved blog from the saved blog collection
+    const del = await client.db("mtc").collection("liked_posts").deleteOne({blog_id: ObjectId(data.blog_id), author_id: ObjectId(data.loggeduserid)});
+    // return the updated saved blogs by user
+    const findalllikedblog = await client.db("mtc").collection("liked_posts").aggregate([
+        {$match : {author_id: ObjectId(data.loggeduserid)}},
+        {$lookup : {
+            from: "blogs",
+            localField: "blog_id",
+            foreignField: "_id",
+            as: "blog_info"
+        }},
+        {$unwind: "$blog_info"},
+        {$lookup : {
+            from: "users",
+            localField: "blog_info.author_id",
+            foreignField: "_id",
+            as: "user_info"
+        }},
+        {$unwind: "$user_info"}
+    ]).toArray()
+    res.send(findalllikedblog)
+})
