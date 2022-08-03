@@ -49,7 +49,8 @@ app.get('/home', async function (req, res) {
       foreignField: "_id",
       as: "user_info"
     }},
-    {$unwind: "$user_info"}
+    {$unwind: "$user_info"},
+    {$sort: {_id : -1}}
   ]).toArray()
   data ? res.status(200).send(data) : res.send({"msg": "No data found"})
 })
@@ -70,7 +71,7 @@ app.get('/search', async function (req, res) {
     }},
     {$unwind: "$user_info"}
   ]).toArray()
-  data && data.length!==0 ? res.status(200).send(data) : res.send({"msg": "No data found"})
+  res.status(200).send(data)
 })
 
 
@@ -220,7 +221,7 @@ app.post("/alter-liked_posts/:id", async function(req,res){
 // API for bookmarks data when the component first mounts
 app.post("/get-bookmark-info", async function(req, res){
   const data = req.body;
-  const result = await client.db("mtc").collection("liked_posts").findOne({blog_id : ObjectId(data.blog_id), author_id: ObjectId(data.author_id)});
+  const result = await client.db("mtc").collection("saved_posts").findOne({blog_id : ObjectId(data.blog_id), author_id: ObjectId(data.author_id)});
   if(result){
     res.send({"msg": true});
   }else{
