@@ -292,4 +292,40 @@ app.get("/more-from-author/:id", async function(req,res){
 
 
 
+
+
+// API to get any 4 random blogs for keep exploring from mtc data
+app.get("/get-any-4-random-blogs", async function(req, res){
+  // get all blogs  in the db
+  const allblogs = await client.db("mtc").collection("blogs").aggregate([
+    {$lookup: {
+      from: "users",
+      localField: "author_id",
+      foreignField: "_id",
+      as : "user_info"
+    }},
+    {$unwind: "$user_info"}
+  ]).toArray();
+  // generate any 4 random numners to choose the blog from
+  let arr2send = [];
+  let trackrep = [];
+  while(arr2send.length<4){
+    const rannum = Math.floor(Math.random()*allblogs.length);
+    if(trackrep.includes(rannum)){
+      continue
+    }else{
+      trackrep.push(rannum)
+      arr2send.push(allblogs[rannum])
+    }
+  }
+  res.send(arr2send)
+})
+
+
+
+
+
+
+
+
 app.listen(process.env.PORT)

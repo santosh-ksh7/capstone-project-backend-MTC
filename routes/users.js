@@ -368,3 +368,16 @@ router.post("/delete-a-liked-post", async function(req, res){
     ]).toArray()
     res.send(findalllikedblog)
 })
+
+
+
+
+
+
+
+// API to get the user info based on it's id
+router.get("/get-author-info/:id", async function(req, res){
+    const {id} = req.params;
+    const findindb = await client.db("mtc").collection("users").findOne({_id: ObjectId(id)})
+    res.send(findindb);
+})
