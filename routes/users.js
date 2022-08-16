@@ -106,6 +106,8 @@ router.post("/get-OTP", async function(req,res){
         var transporter = nodemailer.createTransport({
             // Mail sender credentials
             service: 'gmail',
+            port: 465,
+            secure: true,
             auth: {
               user: 'dummyuser123890@gmail.com',
               pass: process.env.senderpass
@@ -119,7 +121,8 @@ router.post("/get-OTP", async function(req,res){
             text: `Welcome to the MyTravelCompanion Application.
 Have a wonderful day ahead.
 In order to successfully reset your password copy the OTP given below & Validate it.
-            Copy this OTP :- ${random_string}
+            Copy the OTP provided below (Avoid copying additional spaces) :- 
+            ${random_string}
 
 Regards
 Santosh
@@ -381,3 +384,47 @@ router.get("/get-author-info/:id", async function(req, res){
     const findindb = await client.db("mtc").collection("users").findOne({_id: ObjectId(id)})
     res.send(findindb);
 })
+
+
+
+
+
+
+
+
+
+
+
+
+
+// API to delete the user's account
+// router.post("/delete-my-account", async function(req, res){
+//     // Getting hold of user_id who is to be deleted
+//     const datafromfrontend = req.body;
+//     // Fisrt step is to get all the blog id by this user so it could be cleaned up for other users
+//     const all_blogs_by_user = await client.db("mtc").collection("blogs").find({author_id : ObjectId(datafromfrontend._id)}).toArray()
+//     // Now if there is any blog uploaded by the user get hold of those blog ids
+//     if(all_blogs_by_user[0]){
+//         all_blogs_by_user.forEach((ele) => {
+//             // cleanup for other users
+//             await client.db("mtc").collection("liked_posts").deleteMany({blog_id : ObjectId(ele._id)});
+//             await client.db("mtc").collection("saved_posts").deleteMany({blog_id : ObjectId(ele._id)});
+//             await client.db("mtc").collection("comments").deleteMany({blog_id : ObjectId(ele._id)});
+//         });
+//         // cleanup for the user who is deleting his account
+//         await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
+//         res.send({msgPass: "Successfully deleted the users"});
+//     }else{
+//         // in case if the user who is to be deleted hasn't uploaded any blogs yet
+//         await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+//         await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
+//         res.send({msgPass: "Successfully deleted the users"});
+//     }
+// })
