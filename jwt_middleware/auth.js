@@ -9,8 +9,10 @@ export const auth = (req, res, next) => {
         // This validates the token against the secret key that was originally used to create the token during the login process
         jwt.verify(token, process.env.secret_key);
         // Only if the token is validated the next() callback function in the fetch API is called
+        console.log("Token is verified & now invoking the callback function");
         next();
     }catch(err){
+        console.log("Token is not verified");
         res.status(401).send({"error": err.message})
     }
 }

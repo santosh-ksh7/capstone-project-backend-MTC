@@ -2,6 +2,7 @@
 import { ObjectId, ObjectID } from "bson";
 import express from "express";
 import { client } from "../index.js";
+import {auth} from "../jwt_middleware/auth.js"
 
 
 const router = express.Router();
@@ -13,7 +14,7 @@ export const writeablogRouter = router;
 
 
 // API to upload blog
-router.post("/upload-blog", async function(req,res){
+router.post("/upload-blog", auth, async function(req,res){
     let data = req.body;
     // Adding additional data to blog post sent by user -- like date, time2read, like count
     // initializing clap/like count to zero for newly uploaded blog
@@ -62,7 +63,7 @@ router.post("/upload-blog", async function(req,res){
 
 
 // API to get a specific blog only data
-router.get("/get-data-4-editing-a-blog/:id", async function(req, res){
+router.get("/get-data-4-editing-a-blog/:id", auth, async function(req, res){
     // Making use of req.params to get id of blog
     const{id} = req.params;
     // Query the db to get the data
@@ -77,7 +78,7 @@ router.get("/get-data-4-editing-a-blog/:id", async function(req, res){
 
 
 // API to edit the blog & update the document in DB
-router.post("/edit-a-blog", async function(req, res){
+router.post("/edit-a-blog", auth, async function(req, res){
     let data = req.body;
     const updatedocument = await client.db("mtc").collection("blogs").updateOne({_id: ObjectId(data._id)}, {$set: {"title": data.title, "story": data.story, "tag": data.tag, "blog_pic": data.blog_pic}});
     console.log(updatedocument);

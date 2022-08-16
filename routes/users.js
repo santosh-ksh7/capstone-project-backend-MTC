@@ -5,6 +5,8 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import nodemailer from "nodemailer";
 import { ObjectId } from "mongodb";
+// Custom middle ware to validate token
+import {auth} from "../jwt_middleware/auth.js";
 
 
 const router = express.Router();
@@ -183,7 +185,7 @@ router.post("/reset-password", async function(req,res){
 
 
 // API to update users account info
-router.post("/update-account-info",  async function(req, res){
+router.post("/update-account-info", auth , async function(req, res){
     const data = req.body
     // first check that in case if the email is updated by user, the same emailID shouldn't be associated to any other user.
     const findindb = await client.db("mtc").collection("users").findOne({email: data.email, _id: {$ne : ObjectId(data._id)}});
@@ -200,7 +202,7 @@ router.post("/update-account-info",  async function(req, res){
 
 
 // API for all blogs specific to user based on it's _id (from the local storage in the frontend)
-router.get("/get-all-blogs/:id", async function(req,res){
+router.get("/get-all-blogs/:id", auth, async function(req,res){
     const {id} = req.params;
     console.log(id);
     const getallblogs = await client.db("mtc").collection("blogs").aggregate([
@@ -225,7 +227,7 @@ router.get("/get-all-blogs/:id", async function(req,res){
 
 
 // API to delete a blog
-router.get("/delete-a-post/:id", async function(req, res){
+router.get("/delete-a-post/:id", auth, async function(req, res){
     // using params in the URL to get hold of the id of the post that is to be deleted
     const{id} = req.params;
     // Initial stage is to find the author of the blog for later use
@@ -258,7 +260,7 @@ router.get("/delete-a-post/:id", async function(req, res){
 
 
 // API to get all saved posts by a user
-router.get("/get-all-saved-posts/:id", async function(req, res){
+router.get("/get-all-saved-posts/:id", auth, async function(req, res){
     const {id} = req.params;
     // Find all saved blogs by user & send the response back
     const findallsavedblog = await client.db("mtc").collection("saved_posts").aggregate([
@@ -287,7 +289,7 @@ router.get("/get-all-saved-posts/:id", async function(req, res){
 
 
 // API to delete a saved post & return the updated saved post data
-router.post("/delete-a-saved-post", async function(req, res){
+router.post("/delete-a-saved-post", auth , async function(req, res){
     const data = req.body;
     // Delete the saved blog from the saved blog collection
     const del = await client.db("mtc").collection("saved_posts").deleteOne({blog_id: ObjectId(data.blog_id), author_id: ObjectId(data.loggeduserid)});
@@ -319,7 +321,7 @@ router.post("/delete-a-saved-post", async function(req, res){
 
 
 // API to get all liked blogs by a user
-router.get("/get-all-liked-posts/:id", async function(req, res){
+router.get("/get-all-liked-posts/:id", auth, async function(req, res){
     const {id} = req.params;
     // Find all saved blogs by user & send the response back
     const findalllikedblog = await client.db("mtc").collection("liked_posts").aggregate([
@@ -347,7 +349,7 @@ router.get("/get-all-liked-posts/:id", async function(req, res){
 
 
 // API to delete a saved post & return updated saved post by user
-router.post("/delete-a-liked-post", async function(req, res){
+router.post("/delete-a-liked-post", auth, async function(req, res){
     const data = req.body;
     // Delete the saved blog from the saved blog collection
     const del = await client.db("mtc").collection("liked_posts").deleteOne({blog_id: ObjectId(data.blog_id), author_id: ObjectId(data.loggeduserid)});

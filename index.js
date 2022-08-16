@@ -5,6 +5,8 @@ import { userRouter } from './routes/users.js'
 import { writeablogRouter } from './routes/writeablog.js'
 import dotenv from "dotenv"
 import cors from "cors"
+// Custom middle ware to validate token
+import {auth} from "./jwt_middleware/auth.js"
 
 
 const app = express()
@@ -138,7 +140,7 @@ app.get('/comments/:id', async function (req, res) {
 
 
 // API to fetch individual user info for comments data          ---- making use of req.params & local info to find individual logged-in user
-app.get('/individual-user-info/:id', async function (req, res) {
+app.get('/individual-user-info/:id', auth, async function (req, res) {
   const {id} = req.params     // params passed in the url is stored as object = {id: params}. Hence destructuring.
   // The dynamic part of url is sent as string. We need to convert it back to ObjectId data type of mongo DB.
   const data2send = await client.db("mtc").collection("users").findOne({_id : ObjectId(id)})
