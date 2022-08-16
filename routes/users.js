@@ -398,33 +398,35 @@ router.get("/get-author-info/:id", async function(req, res){
 
 
 // API to delete the user's account
-// router.post("/delete-my-account", async function(req, res){
-//     // Getting hold of user_id who is to be deleted
-//     const datafromfrontend = req.body;
-//     // Fisrt step is to get all the blog id by this user so it could be cleaned up for other users
-//     const all_blogs_by_user = await client.db("mtc").collection("blogs").find({author_id : ObjectId(datafromfrontend._id)}).toArray()
-//     // Now if there is any blog uploaded by the user get hold of those blog ids
-//     if(all_blogs_by_user[0]){
-//         all_blogs_by_user.forEach((ele) => {
-//             // cleanup for other users
-//             await client.db("mtc").collection("liked_posts").deleteMany({blog_id : ObjectId(ele._id)});
-//             await client.db("mtc").collection("saved_posts").deleteMany({blog_id : ObjectId(ele._id)});
-//             await client.db("mtc").collection("comments").deleteMany({blog_id : ObjectId(ele._id)});
-//         });
-//         // cleanup for the user who is deleting his account
-//         await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
-//         res.send({msgPass: "Successfully deleted the users"});
-//     }else{
-//         // in case if the user who is to be deleted hasn't uploaded any blogs yet
-//         await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
-//         await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
-//         res.send({msgPass: "Successfully deleted the users"});
-//     }
-// })
+router.post("/delete-my-account", async function(req, res){
+    // Getting hold of user_id who is to be deleted
+    const datafromfrontend = req.body;
+    // Fisrt step is to get all the blog id by this user so it could be cleaned up for other users
+    const all_blogs_by_user = await client.db("mtc").collection("blogs").find({author_id : ObjectId(datafromfrontend._id)}).toArray()
+    // Now if there is any blog uploaded by the user get hold of those blog ids
+    if(all_blogs_by_user[0]){
+        // cleanup for other users who might have saved, liked or commented on the user who is deleting his account blog's
+        for (let ele of all_blogs_by_user) {
+            await client.db("mtc").collection("liked_posts").deleteMany({blog_id : ObjectId(ele._id)});
+            await client.db("mtc").collection("saved_posts").deleteMany({blog_id : ObjectId(ele._id)});
+            await client.db("mtc").collection("comments").deleteMany({blog_id : ObjectId(ele._id)});
+        }
+        // cleanup for the user who is deleting his account
+        await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
+        // send the response message
+        res.send({msgPass: "Successfully deleted the users"});
+    }else{
+        // in case if the user who is to be deleted hasn't uploaded any blogs yet
+        await client.db("mtc").collection("blogs").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("comments").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("liked_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("saved_posts").deleteMany({author_id: ObjectId(datafromfrontend._id)});
+        await client.db("mtc").collection("users").deleteOne({_id: ObjectId(datafromfrontend._id)});
+        // send the response message
+        res.send({msgPass: "Successfully deleted the users"});
+    }
+})
