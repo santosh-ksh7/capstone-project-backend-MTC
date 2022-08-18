@@ -150,7 +150,7 @@ app.get('/individual-user-info/:id', auth, async function (req, res) {
 
 
 // API to post the comment
-app.post("/post-comment", async function (req,res){
+app.post("/post-comment", auth, async function (req,res){
   const datafromfrontend = req.body;
   let data2insert = {...datafromfrontend, "blog_id" : ObjectId(datafromfrontend.blog_id), "author_id" : ObjectId(datafromfrontend.author_id)}
   console.log(data2insert);
@@ -175,7 +175,7 @@ app.post("/post-comment", async function (req,res){
 
 
 // API for the liked_posts data when the component first mounts
-app.post("/get-like-info", async function(req, res){
+app.post("/get-like-info", auth, async function(req, res){
   const data = req.body;
   const result = await client.db("mtc").collection("liked_posts").findOne({blog_id : ObjectId(data.blog_id), author_id: ObjectId(data.author_id)});
   if(result){
@@ -190,7 +190,7 @@ app.post("/get-like-info", async function(req, res){
 
 
 // API to alter the clap count of blogs
-app.post("/alter-clap-count/:id", async function(req,res){
+app.post("/alter-clap-count/:id", auth, async function(req,res){
   const{id} = req.params;
   const data2update = req.body;
   const result = await client.db("mtc").collection("blogs").updateOne({_id: ObjectId(id)}, {$set : data2update});
@@ -200,7 +200,7 @@ app.post("/alter-clap-count/:id", async function(req,res){
 
 
 // API to remove/add records from liked_posts     ---   same API will add/remove doc. from collection based on req.params
-app.post("/alter-liked_posts/:id", async function(req,res){
+app.post("/alter-liked_posts/:id", auth, async function(req,res){
   const{id} = req.params;
   const data2alter = req.body;
   console.log(data2alter, id);
@@ -221,7 +221,7 @@ app.post("/alter-liked_posts/:id", async function(req,res){
 
 
 // API for bookmarks data when the component first mounts
-app.post("/get-bookmark-info", async function(req, res){
+app.post("/get-bookmark-info", auth, async function(req, res){
   const data = req.body;
   const result = await client.db("mtc").collection("saved_posts").findOne({blog_id : ObjectId(data.blog_id), author_id: ObjectId(data.author_id)});
   if(result){
@@ -237,7 +237,7 @@ app.post("/get-bookmark-info", async function(req, res){
 
 
 // API to add/remove records from saved_posts     ---   same API will add/remove doc. from collection based on req.params
-app.post("/alter-saved_posts/:id", async function(req,res){
+app.post("/alter-saved_posts/:id", auth, async function(req,res){
   const{id} = req.params;
   const data2alter = req.body;
   console.log(data2alter, id);

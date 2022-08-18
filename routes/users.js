@@ -48,7 +48,7 @@ router.post("/register", async function(req,res){
             profile_pic: "https://res.cloudinary.com/dz7pcmtxi/image/upload/v1658877142/blank-profile-picture-g3824f2029_1280_rpx6sg.png"
         }
         const db_insert = await client.db("mtc").collection("users").insertOne(data2enter)
-        res.send({"msg": "entered the data successfully coz mail doesn't exist", db_insert})
+        res.send({"msg": "account created successfully", db_insert})
     }else{
         res.send({"msg": "can't create user because email already registered"})
     }
@@ -202,7 +202,7 @@ router.post("/update-account-info", auth , async function(req, res){
 
 
 // API for all blogs specific to user based on it's _id (from the local storage in the frontend)
-router.get("/get-all-blogs/:id", auth, async function(req,res){
+router.get("/get-all-blogs/:id", async function(req,res){
     const {id} = req.params;
     console.log(id);
     const getallblogs = await client.db("mtc").collection("blogs").aggregate([
@@ -351,6 +351,10 @@ router.get("/get-all-liked-posts/:id", auth, async function(req, res){
 // API to delete a saved post & return updated saved post by user
 router.post("/delete-a-liked-post", auth, async function(req, res){
     const data = req.body;
+    // Reduce the count by 1 first
+    const find_the_blog = await client.db("mtc").collection("blogs").findOne({_id: ObjectId(data.blog_id)});
+    const clap = find_the_blog.clap - 1;
+    const reduce_count = await client.db("mtc").collection("blogs").updateOne({_id : ObjectId(data.blog_id)}, {$set: {"clap" : clap}});
     // Delete the saved blog from the saved blog collection
     const del = await client.db("mtc").collection("liked_posts").deleteOne({blog_id: ObjectId(data.blog_id), author_id: ObjectId(data.loggeduserid)});
     // return the updated saved blogs by user
@@ -400,7 +404,7 @@ router.get("/get-author-info/:id", async function(req, res){
 
 
 // API to delete the user's account
-router.post("/delete-my-account", async function(req, res){
+router.post("/delete-my-account", auth, async function(req, res){
     // Getting hold of user_id who is to be deleted
     const datafromfrontend = req.body;
     // Fisrt step is to get all the blog id by this user so it could be cleaned up for other users
