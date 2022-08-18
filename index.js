@@ -24,7 +24,8 @@ app.use("/write-a-blog", writeablogRouter)
 
 dotenv.config()
 
-const mongo_url = "mongodb://127.0.0.1"
+// const mongo_url = "mongodb://127.0.0.1"
+const mongo_url = process.env.mongo_url;
 
 async function createConnection(){
     const client = new MongoClient(mongo_url);
