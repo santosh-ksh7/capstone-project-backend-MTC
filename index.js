@@ -65,7 +65,7 @@ app.get('/search', async function (req, res) {
   console.log(para);
   // const data = await client.db("mtc").collection("blogs").find({title: {$regex : para}}).toArray();
   const data = await client.db("mtc").collection("blogs").aggregate([
-    {$match : {title: {$regex : para}}},
+    {$match : {title: {$regex : para, $options: "i"}}},
     {$lookup : {
       from: "users",
       localField: "author_id",
